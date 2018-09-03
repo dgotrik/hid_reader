@@ -32,7 +32,7 @@ int main (void)
 
     cout << "GPIO pin directions set" << endl;
 
-    while(i < 20)
+    while(i < 1000)
     {
         usleep(500000);  // wait for 0.5 seconds
         gpio1->getval_gpio(inputstate); //read state of GPIO1 input pin
@@ -62,7 +62,7 @@ int main (void)
         usleep(500000);  // wait for 0.5 seconds
         beep->setval_gpio("0");
 
-
+    }
     cout << "Exiting....." << endl;
 
     return 0;
