@@ -1,69 +1,58 @@
-#include "GPIOClass.h"
+/* 2014-07-06
+   wfi.c
+   Public Domain
 
-using namespace std;
+   gcc -o wfi wfi.c
+https://www.kernel.org/doc/Documentation/gpio/sysfs.txt
+   ./wfi [gpio]
+*/
 
-int main (void)
+#include <stdio.h>
+#include <stdlib.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <sys/time.h>
+#include <poll.h>
+
+#define GPIO 4
+
+int main(int argc, char *argv[])
 {
+   char str[256];
+   struct timeval tv;
+   struct pollfd pfd;
+   int fd, gpio;
+   char buf[8];
 
-    string inputstate;
-    int i = 0;
-    GPIOClass* gpio1 = new GPIOClass("6");
-    GPIOClass* gpio2 = new GPIOClass("13");
-    GPIOClass* gpio3 = new GPIOClass("19");
-    GPIOClass* gpio4 = new GPIOClass("26");
+   /*
+      Prior calls assumed.
+      sudo sh -c "echo 4      >/sys/class/gpio/export"
+      sudo sh -c "echo in     >/sys/class/gpio/gpio4/direction"
+      sudo sh -c "echo rising >/sys/class/gpio/gpio4/edge"
+   */
 
-    GPIOClass* led_green = new GPIOClass("20");
-    GPIOClass* led_red = new GPIOClass("21");
+   if (argc > 1) gpio = atoi(argv[1]);
+   else          gpio = GPIO;
 
-    GPIOClass* beep = new GPIOClass("16");
+   sprintf(str, "/sys/class/gpio/gpio%d/value", gpio);
 
-    GPIOClass* hold_input = new GPIOClass("12");
-    cout << " GPIO pins exported" << endl;
+   if ((fd = open(str, O_RDONLY)) < 0)
+   {
+      fprintf(stderr, "Failed, gpio %d not exported.\n", gpio);
+      exit(1);
+   }
 
-    led_green->setdir_gpio("out");
-    led_red->setdir_gpio("out");
-    beep->setdir_gpio("out");
+   pfd.fd = fd;
 
-    hold_input->setdir_gpio("in");
-    gpio1->setdir_gpio("in");
-    gpio2->setdir_gpio("in");
-    gpio3->setdir_gpio("in");
-    gpio4->setdir_gpio("in");
+   pfd.events = POLLPRI;
 
-    cout << "GPIO pin directions set" << endl;
+   lseek(fd, 0, SEEK_SET);    /* consume any prior interrupt */
+   read(fd, buf, sizeof buf);
 
-    while(i < 20)
-    {
-        usleep(500000);  // wait for 0.5 seconds
-        gpio1->getval_gpio(inputstate); //read state of GPIO1 input pin
-        cout <<"GPIO" << gpio1->get_gpionum() << " Value : " << inputstate  <<endl;
-        gpio2->getval_gpio(inputstate); //read state of GPIO2 input pin
-        cout <<"GPIO" << gpio2->get_gpionum() << " Value : " << inputstate  <<endl;
-        gpio3->getval_gpio(inputstate); //read state of GPIO3 input pin
-        cout <<"GPIO" << gpio3->get_gpionum() << " Value : " << inputstate  <<endl;
-        gpio4->getval_gpio(inputstate); //read state of GPIO4 input pin
-        cout <<"GPIO" << gpio4->get_gpionum() << " Value : " << inputstate  <<endl;
+   poll(&pfd, 1, -1);         /* wait for interrupt */
 
-        hold_input->getval_gpio(inputstate); //read state of GPIO4 input pin
-        int tries = 0;
-        while(tries < 20){
-          tries++;
-          cout << inputstate  <<endl;
-          hold_input->getval_gpio(inputstate); //read state of GPIO4 input pin
-        }
-        hold_input->setdir_gpio("out");
-        hold_input->setval_gpio("1");
+   lseek(fd, 0, SEEK_SET);    /* consume interrupt */
+   read(fd, buf, sizeof buf);
 
-        led_green->setval_gpio("1");
-        usleep(500000);  // wait for 0.5 seconds
-        led_red->setval_gpio("1");
-        usleep(500000);  // wait for 0.5 seconds
-        beep->setval_gpio("1");
-        usleep(500000);  // wait for 0.5 seconds
-        beep->setval_gpio("0");
-
-
-    cout << "Exiting....." << endl;
-
-    return 0;
+   exit(0);
 }

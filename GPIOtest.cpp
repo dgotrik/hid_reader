@@ -32,7 +32,7 @@ int main (void)
 
     cout << "GPIO pin directions set" << endl;
 
-    while(i < 1000)
+    while(i < 10)
     {
         usleep(500000);  // wait for 0.5 seconds
         gpio1->getval_gpio(inputstate); //read state of GPIO1 input pin
@@ -46,9 +46,9 @@ int main (void)
 
         hold_input->getval_gpio(inputstate); //read state of GPIO4 input pin
         int tries = 0;
-        while(tries < 20){
+        while(tries < 200){
           tries++;
-          cout << inputstate  <<endl;
+          cout << inputstate;
           hold_input->getval_gpio(inputstate); //read state of GPIO4 input pin
         }
         hold_input->setdir_gpio("out");
@@ -56,11 +56,13 @@ int main (void)
 
         led_green->setval_gpio("1");
         usleep(500000);  // wait for 0.5 seconds
+        led_green->setval_gpio("0");
+
         led_red->setval_gpio("1");
         usleep(500000);  // wait for 0.5 seconds
-        beep->setval_gpio("1");
-        usleep(500000);  // wait for 0.5 seconds
-        beep->setval_gpio("0");
+        // beep->setval_gpio("1");
+        // usleep(500000);  // wait for 0.5 seconds
+        // beep->setval_gpio("0");
 
     }
     cout << "Exiting....." << endl;

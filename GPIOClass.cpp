@@ -2,6 +2,7 @@
 #include "GPIOClass.h"
 
 using namespace std;
+#define POLL_GPIO = POLLPRI | POLLERR
 
 GPIOClass::GPIOClass():valuefd(-1),directionfd(-1),exportfd(-1),unexportfd(-1),gpionum("4")
 {
@@ -22,7 +23,7 @@ GPIOClass::~GPIOClass()
 
 
 int GPIOClass::export_gpio()
-{
+{//https://www.kernel.org/doc/Documentation/gpio/sysfs.txt
 	int statusVal = -1;
 	string exportStr = "/sys/class/gpio/export";
 	this->exportfd = statusVal = open(exportStr.c_str(),  O_WRONLY|O_SYNC);
