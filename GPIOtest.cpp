@@ -1,10 +1,4 @@
-#include <iostream>
-#include <unistd.h>
-#include <errno.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include "GPIOClass.h"
-#include <signal.h>
 
 using namespace std;
 
@@ -12,77 +6,64 @@ int main (void)
 {
 
     string inputstate;
-    GPIOClass* gpio4 = new GPIOClass("4"); //create new GPIO object to be attached to  GPIO4
-    GPIOClass* gpio17 = new GPIOClass("17"); //create new GPIO object to be attached to  GPIO17
+    int i = 0;
+    GPIOClass* gpio1 = new GPIOClass("6");
+    GPIOClass* gpio2 = new GPIOClass("13");
+    GPIOClass* gpio3 = new GPIOClass("19");
+    GPIOClass* gpio4 = new GPIOClass("26");
 
-    gpio4->export_gpio(); //export GPIO4
-    gpio17->export_gpio(); //export GPIO17
+    GPIOClass* led_green = new GPIOClass("20");
+    GPIOClass* led_red = new GPIOClass("21");
 
+    GPIOClass* beep = new GPIOClass("16");
+
+    GPIOClass* hold_input = new GPIOClass("12");
     cout << " GPIO pins exported" << endl;
 
-    gpio17->setdir_gpio("in"); //GPIO4 set to output
-    gpio4->setdir_gpio("out"); // GPIO17 set to input
+    led_green->setdir_gpio("out");
+    led_red->setdir_gpio("out");
+    beep->setdir_gpio("out");
 
-    cout << " Set GPIO pin directions" << endl;
+    hold_input->setdir_gpio("in");
+    gpio1->setdir_gpio("in");
+    gpio2->setdir_gpio("in");
+    gpio3->setdir_gpio("in");
+    gpio4->setdir_gpio("in");
 
-    struct sigaction sig_struct;
-    sig_struct.sa_handler = sig_handler;
-    sig_struct.sa_flags = 0;
-    sigemptyset(&sig_struct.sa_mask);
-    if (sigaction(SIGINT, &sig_struct, NULL) == -1) {
-            cout << "Problem with sigaction" << endl;
-            return -1;
-        }
+    cout << "GPIO pin directions set" << endl;
 
-
-    while(1)
+    while(i < 20)
     {
         usleep(500000);  // wait for 0.5 seconds
-        gpio17->getval_gpio(inputstate); //read state of GPIO17 input pin
-        cout << "Current input pin state is " << inputstate  <<endl;
-        if(inputstate == "0") // if input pin is at state "0" i.e. button pressed
-        {
-            cout << "input pin state is "Pressed ".n Will check input pin state again in 20ms "<<endl;
-                usleep(20000);
-                    cout << "Checking again ....." << endl;
-                    gpio17->getval_gpio(inputstate); // checking again to ensure that state "0" is due to button press and not noise
-            if(inputstate == "0")
-            {
-                cout << "input pin state is definitely "Pressed". Turning LED ON" <<endl;
-                gpio4->setval_gpio("1"); // turn LED ON
+        gpio1->getval_gpio(inputstate); //read state of GPIO1 input pin
+        cout <<"GPIO" << gpio1->get_gpionum() << " Value : " << inputstate  <<endl;
+        gpio2->getval_gpio(inputstate); //read state of GPIO2 input pin
+        cout <<"GPIO" << gpio2->get_gpionum() << " Value : " << inputstate  <<endl;
+        gpio3->getval_gpio(inputstate); //read state of GPIO3 input pin
+        cout <<"GPIO" << gpio3->get_gpionum() << " Value : " << inputstate  <<endl;
+        gpio4->getval_gpio(inputstate); //read state of GPIO4 input pin
+        cout <<"GPIO" << gpio4->get_gpionum() << " Value : " << inputstate  <<endl;
 
-                cout << " Waiting until pin is unpressed....." << endl;
-                while (inputstate == "0"){
-                gpio17->getval_gpio(inputstate);
-                };
-                cout << "pin is unpressed" << endl;
-
-            }
-            else
-                cout << "input pin state is definitely "UnPressed". That was just noise." <<endl;
-
+        hold_input->getval_gpio(inputstate); //read state of GPIO4 input pin
+        int tries = 0;
+        while(tries < 20){
+          tries++;
+          cout << inputstate  <<endl;
+          hold_input->getval_gpio(inputstate); //read state of GPIO4 input pin
         }
-        gpio4->setval_gpio("0");
-        if(ctrl_c_pressed)
-        {
-            cout << "Ctrl^C Pressed" << endl;
-            cout << "unexporting pins" << endl;
-            gpio4->unexport_gpio();
-            gpio17->unexport_gpio();
-            cout << "deallocating GPIO Objects" << endl;
-            delete gpio4;
-            gpio4 = 0;
-            delete gpio17;
-            gpio17 =0;
-            break;
+        hold_input->setdir_gpio("out");
+        hold_input->setval_gpio("1");
 
-        }
-    }
+        led_green->setval_gpio("1");
+        usleep(500000);  // wait for 0.5 seconds
+        led_red->setval_gpio("1");
+        usleep(500000);  // wait for 0.5 seconds
+        beep->setval_gpio("1");
+        usleep(500000);  // wait for 0.5 seconds
+        beep->setval_gpio("0");
+
+
     cout << "Exiting....." << endl;
+
     return 0;
-}
-void sig_handler(int sig)
-{
-    write(0,"nCtrl^C pressed in sig handlern",32);
-    ctrl_c_pressed = true;
 }
