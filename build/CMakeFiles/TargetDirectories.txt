@@ -1,0 +1,3 @@
+C:/workspace/git/hid_reader/build/CMakeFiles/hid_reader.dir
+C:/workspace/git/hid_reader/build/CMakeFiles/ALL_BUILD.dir
+C:/workspace/git/hid_reader/build/CMakeFiles/ZERO_CHECK.dir

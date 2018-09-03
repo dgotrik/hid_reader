@@ -30,3 +30,10 @@
 *.exe
 *.out
 *.app
+
+
+*.tlog
+*.cxx
+*.bin
+*.check_cache
+build/*
