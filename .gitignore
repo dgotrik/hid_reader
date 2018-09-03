@@ -36,4 +36,4 @@
 *.cxx
 *.bin
 *.check_cache
-build/*
+*build/*
